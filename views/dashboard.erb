@@ -17,8 +17,8 @@
         var meatChamberTempGraph = $('#areaChart').epoch({
           type: 'time.area',
           data: [
-            {label: 'ChamberTemp', values: [{time: currentTime, y: 0}]},
-            {label: 'MeatTemp', values: [{time: currentTime, y: 0}]}
+            {label: 'ChamberTemp', values: [{time: currentTime, y: 0}]}
+            //{label: 'MeatTemp', values: [{time: currentTime, y: 0}]}
           ],
           axes: ['left', 'right', 'bottom']
         });
@@ -30,13 +30,15 @@
         window.ws.onmessage = function(m) {
           var dataPoints = $.parseJSON(m.data);
 
-          var realMeatTemp = dataPoints.chamberTemp - dataPoints.meatTemp;
-          var realChamberTemp = dataPoints.chamberTemp - realMeatTemp;
+
+          //var realMeatTemp = dataPoints.chamberTemp - dataPoints.meatTemp;
+          //var realChamberTemp = dataPoints.chamberTemp - realMeatTemp;
           console.log(realChamberTemp);
           console.log(realMeatTemp);
           meatChamberTempGraph.push([
-              {time: dataPoints.timestamp, y: parseFloat(realChamberTemp)},
-              {time: dataPoints.timestamp, y: parseFloat(realMeatTemp)}
+              {time: dataPoints.timestamp, y: dataPoints.chamberTemp)},
+              //{time: dataPoints.timestamp, y: parseFloat(realChamberTemp)},
+              //{time: dataPoints.timestamp, y: parseFloat(realMeatTemp)}
           ]);
         };
       });
