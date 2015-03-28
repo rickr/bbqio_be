@@ -1,17 +1,17 @@
-Hello
 <div id='msgs'></div>
 
 <script type="text/javascript">
+    window.ws = null;
     window.onload = function(){
       (function(){
         var show = function(el){
           return function(msg){ el.innerHTML = msg + '<br />' + el.innerHTML; }
         }(document.getElementById('msgs'));
 
-        var ws       = new WebSocket('ws://' + window.location.host + '/sensor_data');
-        ws.onopen    = function()  { show('websocket opened'); };
-        ws.onclose   = function()  { show('websocket closed'); }
-        ws.onmessage = function(m) { show('websocket message: ' +  m.data); };
+        window.ws       = new WebSocket('ws://' + window.location.host + '/sensor_data');
+        window.ws.onopen    = function()  { show('WS Opened'); };
+        window.ws.onclose   = function()  { show('WS Closed'); }
+        window.ws.onmessage = function(m) { show('RX: ' +  m.data); };
 
         //var sender = function(f){
         //  var input     = document.getElementById('input');
