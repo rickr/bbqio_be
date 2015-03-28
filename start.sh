@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pkill -9 'tmux -d -s be'
+kill -9 $(ps -ef | grep '[n]ew-session -d -s be' | awk ' { print $2 } ')
 
 source /usr/local/rvm/scripts/rvm
 rvm use 2.2
