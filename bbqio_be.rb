@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra-websocket'
 require 'active_record'
 
 ActiveRecord::Base.establish_connection(
@@ -7,6 +8,8 @@ ActiveRecord::Base.establish_connection(
 )
 
 set :bind, '0.0.0.0'
+set :server, 'thin'
+set :sockets, []
 
 #
 # Models
@@ -19,10 +22,35 @@ post '/sensor_data' do
   name = params[:name]
   value = params[:value]
   new_data = SensorData.create(timestamp: timestamp, name: name, value: value)
+  puts 'Sending to socket'
+  puts settings.sockets.inspect
+  settings.sockets.each{|s| s.send(new_data.to_json)}
   new_data.to_json
 end
 
 get '/sensor_data' do
-  SensorData.all.to_json
+  if request.websocket?
+    request.websocket do |ws|
+      ws.onopen do
+        ws.send("Hello World!")
+        settings.sockets << ws
+      end
+
+      ws.onmessage do |msg|
+        EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+      end
+
+      ws.onclose do
+        warn("websocket closed")
+        settings.sockets.delete(ws)
+      end
+    end
+  else
+    SensorData.all.to_json
+  end
+end
+
+get '/' do
+  erb :index
 end
 
