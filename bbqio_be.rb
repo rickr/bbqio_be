@@ -21,11 +21,11 @@ post '/sensor_data' do
   timestamp = params[:timestamp]
   name = params[:name]
   value = params[:value]
-  new_data = SensorData.create(timestamp: timestamp, name: name, value: value)
+  new_data = SensorData.new(timestamp: timestamp, name: name, value: value)
   puts 'Sending to socket'
-  puts settings.sockets.inspect
-  settings.sockets.each{|s| s.send(new_data.to_json)}
-  new_data.to_json
+  puts params.to_json
+  settings.sockets.each{|s| s.send(params.to_json)}
+  params.to_json
 end
 
 get '/sensor_data' do
@@ -52,5 +52,9 @@ end
 
 get '/' do
   erb :index
+end
+
+get '/dashboard' do
+  erb :dashboard
 end
 
