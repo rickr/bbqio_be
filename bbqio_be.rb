@@ -6,6 +6,7 @@ ActiveRecord::Base.establish_connection(
   :database =>  'bbqio_be.sqlite3'
 )
 
+set :bind, '0.0.0.0'
 
 #
 # Models
