@@ -4,42 +4,103 @@
     <link rel="stylesheet" type="text/css" href="css/epoch.min.css">
     <title>Dashboard</title>
     <script src="js/jquery-2.1.3.min.js"></script>
+    <style>
+      .container{
+        display:flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-content: center;
+        align-items: flex-start;
+      }
+
+      .flex-items-default {
+        width: 300px;
+        height: 250px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: 0;
+      }
+
+      #chamberChart{
+        width: 80%;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="areaChart" class="epoch category10" style="height: 200px;"></div>
+    <div id='chamberContainer'>
+    <center>
+      <div><center><h3>Chamber Temp</h3></center></div>
+      <div id="chamberChart" class="epoch category10" style="height: 200px;"></div>
+      </center>
+    </div>
+
+    <div id='humidityContainer'>
+      <center>
+        <!--<div><center><h3>Humidity %</h3></center></div>-->
+        <table width=40%>
+          <tr><td><center><h3>Humidity %</td><td><center><h3>Smoke Level</td></tr>
+          <tr>
+            <td>
+              <center>
+              <span id='humidityChart' class='epoch gauge-small'></span>
+            </td>
+            <td>
+              <center>
+              <span id='smokeChart' class='epoch gauge-small'></span>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </div>
 
     <script src="js/d3.min.js"></script>
     <script src="js/epoch.min.js"></script>
     <script type='text/javascript'>
       $(document).ready(function(){
         var currentTime = Math.floor(Date.now() / 1000);
-        var meatChamberTempGraph = $('#areaChart').epoch({
+
+        var meatChamberTempGraph = $('#chamberChart').epoch({
           type: 'time.area',
           data: [
             {label: 'ChamberTemp', values: [{time: currentTime, y: 0}]}
-            //{label: 'MeatTemp', values: [{time: currentTime, y: 0}]}
           ],
           axes: ['left', 'right', 'bottom']
         });
 
+        var humidityChart = $('#humidityChart').epoch({
+          type: 'time.gauge',
+          value: 0.0
+        });
+
+        var smokeChart = $('#smokeChart').epoch({
+          type: 'time.gauge',
+          value: 0.0
+        });
+
+        function reconnect_to_ws(){
+          window.ws = new WebSocket('ws://' + window.location.host + '/sensor_data');
+        }
 
         window.ws           = new WebSocket('ws://' + window.location.host + '/sensor_data');
         window.ws.onopen    = function()  { console.log('WS opened'); }
-        window.ws.onclose   = function()  { console.log('WS Closed'); }
+
+        window.ws.onclose   = function(){ 
+          console.log('WS Closed'); 
+          var timerOut = setInterval(function(){ return; }, 5000);
+        }
+
         window.ws.onmessage = function(m) {
           var dataPoints = $.parseJSON(m.data);
 
-
-          //var realMeatTemp = dataPoints.chamberTemp - dataPoints.meatTemp;
-          //var realChamberTemp = dataPoints.chamberTemp - realMeatTemp;
-          //console.log(realChamberTemp);
-          //console.log(realMeatTemp);
           meatChamberTempGraph.push([
               {time: dataPoints.timestamp, y: dataPoints.chamberTemp}
-              //{time: dataPoints.timestamp, y: parseFloat(realChamberTemp)},
-              //{time: dataPoints.timestamp, y: parseFloat(realMeatTemp)}
           ]);
+
+          humidityChart.update(parseFloat(dataPoints.humidityValue));
+
+          smokeChart.update(parseFloat(dataPoints.smokeValue));
         };
       });
     </script>
