@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'sinatra-websocket'
 require 'active_record'
+require 'twilio-ruby'
 
 ActiveRecord::Base.establish_connection(
   :adapter => 'sqlite3',
@@ -10,6 +11,15 @@ ActiveRecord::Base.establish_connection(
 set :bind, '0.0.0.0'
 set :server, 'thin'
 set :sockets, []
+
+#Get your Account Sid and Auth Token from twilio.com/user/account
+#account_sid = 'ACff8f06d3e47273e5b02b40590c58233f'
+#auth_token = '2a9bf2cfc6bda9a2f227d388a55af0eb'
+
+# Prod
+#account_sid = 'PN7dbbd23c5ec58ec9afca9a33526faf84'
+#auth_token = '7511f2d3c39b8cdbcbc71b09a5d32f10'
+
 
 #
 # Models
@@ -36,7 +46,34 @@ get '/sensor_data' do
       end
 
       ws.onmessage do |msg|
-        puts msg
+        puts "RX msg: #{msg}"
+        parsed_message = nil
+
+        begin
+          parsed_message = JSON.parse(msg)
+        rescue
+        end
+
+        puts parsed_message.inspect
+        if(parsed_message && parsed_message.has_key?('msg'))
+          begin
+            account_sid = 'AC6076a757571ace25e106af671a1f175f'
+            auth_token = '7511f2d3c39b8cdbcbc71b09a5d32f10'
+            @twilio = Twilio::REST::Client.new account_sid, auth_token
+            puts @twilio.inspect
+            puts parsed_message
+            puts 'RXd msg'
+            message = @twilio.account.messages.create({
+              :from => '+12674227748',
+              :to => '4074708819',
+              :body => parsed_message['msg']
+            })
+          rescue Exception => e
+            puts 'Failed to send msg'
+            puts e.inspect
+          end
+        end
+
         EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
       end
 
