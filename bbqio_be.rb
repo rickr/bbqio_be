@@ -16,10 +16,6 @@ set :sockets, []
 #account_sid = 'ACff8f06d3e47273e5b02b40590c58233f'
 #auth_token = '2a9bf2cfc6bda9a2f227d388a55af0eb'
 
-# Prod
-#account_sid = 'PN7dbbd23c5ec58ec9afca9a33526faf84'
-#auth_token = '7511f2d3c39b8cdbcbc71b09a5d32f10'
-
 
 #
 # Models
@@ -65,7 +61,7 @@ get '/sensor_data' do
             puts 'RXd msg'
             message = @twilio.account.messages.create({
               :from => '+12674227748',
-              :to => '4074708819',
+              :to => '2128675309',
               :body => parsed_message['msg']
             })
           rescue Exception => e
